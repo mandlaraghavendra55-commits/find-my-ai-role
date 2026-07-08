@@ -9,9 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PostRouteImport } from './routes/post'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as JobsIdRouteImport } from './routes/jobs.$id'
 
+const PostRoute = PostRouteImport.update({
+  id: '/post',
+  path: '/post',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -25,32 +31,43 @@ const JobsIdRoute = JobsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/post': typeof PostRoute
   '/jobs/$id': typeof JobsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/post': typeof PostRoute
   '/jobs/$id': typeof JobsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/post': typeof PostRoute
   '/jobs/$id': typeof JobsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/jobs/$id'
+  fullPaths: '/' | '/post' | '/jobs/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/jobs/$id'
-  id: '__root__' | '/' | '/jobs/$id'
+  to: '/' | '/post' | '/jobs/$id'
+  id: '__root__' | '/' | '/post' | '/jobs/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PostRoute: typeof PostRoute
   JobsIdRoute: typeof JobsIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/post': {
+      id: '/post'
+      path: '/post'
+      fullPath: '/post'
+      preLoaderRoute: typeof PostRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PostRoute: PostRoute,
   JobsIdRoute: JobsIdRoute,
 }
 export const routeTree = rootRouteImport
