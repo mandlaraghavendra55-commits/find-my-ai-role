@@ -1,167 +1,90 @@
-# Kindling — Job Board Documentation
+# Kindling — Project Documentation
 
-Kindling is a curated job board for engineers, designers, and other makers.
-It is built with **TanStack Start** (React 19 + Vite 7) and Tailwind CSS v4,
-deployed to **Vercel** through a GitHub Actions CI/CD pipeline.
+A minimal, human-curated job board for AI/ML and maker-focused roles. Live at **https://find-my-ai-role.vercel.app/**.
 
----
+## Overview
 
-## Feature Overview
+Kindling lists a small, hand-picked set of open roles so candidates can browse without noise and employers can post directly. The current build ships with 8 seeded roles and simple browse / detail / post flows.
 
-| Feature | Route | Description |
-| --- | --- | --- |
-| Browse jobs | `/` | Landing page with search, filters, and a job feed |
-| Job details | `/jobs/:id` | Full job description with an apply CTA |
-| Post a job | `/post` | Form to publish a new listing (stored locally in this demo) |
-| About | `/about` | Marketing/about page |
-| Sitemap | `/sitemap.xml` | Auto-generated sitemap of every public route |
+## Tech Stack
 
----
+- **Framework:** TanStack Start v1 (React 19, SSR-ready)
+- **Bundler:** Vite 7
+- **Routing:** TanStack Router (file-based, in `src/routes/`)
+- **Data:** TanStack Query
+- **Styling:** Tailwind CSS v4 (via `src/styles.css`)
+- **UI primitives:** shadcn/ui + Radix
+- **Forms & validation:** react-hook-form + Zod
+- **Icons:** lucide-react
+- **Hosting:** Vercel (deployed via GitHub Actions from `main`)
 
-## 1. Browse & Discovery (`/`)
+## Routes
 
-The home page is the primary discovery surface. It provides three ways to
-narrow down the feed:
+| Path            | File                       | Purpose                          |
+| --------------- | -------------------------- | -------------------------------- |
+| `/`             | `src/routes/index.tsx`     | Home — browse curated roles     |
+| `/jobs/:id`     | `src/routes/jobs.$id.tsx`  | Job detail page                  |
+| `/post`         | `src/routes/post.tsx`      | Employer "Post a job" form      |
+| `/about`        | `src/routes/about.tsx`     | About the project                |
+| `/sitemap.xml`  | `src/routes/sitemap[.]xml.ts` | Auto-generated sitemap       |
 
-- **Full-text search** — matches title, company, location, and tags.
-- **Employment type filter** — pill selector for `Full-time`, `Part-time`,
-  `Contract`, `Internship`, or `All`.
-- **Remote-only toggle** — hides on-site roles when enabled.
+Root layout: `src/routes/__root.tsx` (metadata, `<Outlet />`, providers).
 
-All filtering happens client-side against the in-memory job list, so results
-update instantly with no network round-trip. The result count is displayed
-above the feed and updates live.
-
-Each list item shows the company glyph, title, location, employment type,
-salary range, tags, and time since posting, with the full card acting as a
-link to the job detail page.
-
-## 2. Job Detail (`/jobs/:id`)
-
-A dynamic route that renders full information for a single listing:
-
-- Company header with logo, title, salary, location, type, posted date.
-- Tag chips.
-- Free-form description.
-- Structured **Responsibilities** and **Requirements** lists.
-- Sticky "Apply now" button in the header + a large call-to-action at the
-  bottom. If the poster provided an `applyUrl` it is used; otherwise a
-  `mailto:` link is generated.
-- Per-page SEO — each job route generates its own `<title>`,
-  `<meta description>`, and Open Graph tags from the job data.
-- Graceful "Job not found" state for missing IDs.
-
-## 3. Post a Job (`/post`)
-
-A single-page form for publishing a role. Fields:
-
-| Field | Required | Notes |
-| --- | --- | --- |
-| Job title | ✅ | Free text |
-| Company | ✅ | First letter is used as the company glyph |
-| Location | | Defaults to "Remote" |
-| Employment type | | Pill selector |
-| Salary | | Free text (e.g. `$120k – $180k`) |
-| Tags | | Comma-separated; parsed into chips |
-| Application URL | | External link used by "Apply" |
-| Description | | Multi-line body copy |
-| Remote-friendly | | Toggle |
-
-On submit the job is persisted to `localStorage` under
-`jobboard.custom.jobs.v1` and the user is redirected to the new detail
-page. A Sonner toast confirms success.
-
-> **Note:** because this demo stores posts locally, they are visible only
-> in the browser that created them. Wiring the same form to a real database
-> (e.g. Lovable Cloud / Postgres) is a two-file change: replace
-> `saveCustomJob`/`getAllJobs` in `src/lib/jobs.ts` and add a server function
-> that reads/writes the row.
-
-## 4. About (`/about`)
-
-Editorial page describing the product's stance: human-curated, no ghost
-listings, no aggregated scraps.
-
-## 5. Design System
-
-All styling is driven by semantic tokens in `src/styles.css` (Tailwind v4
-`@theme inline` block). The palette is a warm cream background with an
-ember-orange primary. shadcn/ui components (Button, Card, Input, Textarea,
-Badge, Label, Sonner) are used throughout so restyling is a token change,
-not a component change.
-
-Layout primitives:
-
-- Sticky glassy `SiteHeader` on every page.
-- Consistent max-width container (`max-w-6xl` for feeds, `max-w-3xl` /
-  `max-w-2xl` for reading).
-- Hover-elevated job cards for scannability.
-
-## 6. SEO
-
-- Route-level `head()` metadata on every public page (title, description,
-  Open Graph, Twitter cards).
-- Server-rendered `sitemap.xml` including every seed job.
-- `robots.txt` allowing all crawlers.
-- Semantic HTML (`<header>`, `<main>`, `<footer>`, `<article>`, single
-  `<h1>` per page).
-
-## 7. Architecture
+## Project Structure
 
 ```
 src/
-├── routes/
-│   ├── __root.tsx          # shell + providers (QueryClient, Toaster)
-│   ├── index.tsx           # browse + filters
-│   ├── jobs.$id.tsx        # job detail
-│   ├── post.tsx            # post-a-job form
-│   ├── about.tsx           # about page
-│   └── sitemap[.]xml.ts    # generated /sitemap.xml
-├── components/
-│   ├── site-header.tsx     # shared header + footer
-│   └── ui/                 # shadcn components
-├── lib/
-│   └── jobs.ts             # types, seed data, localStorage store
-└── styles.css              # design tokens
+  routes/          # File-based routes (TanStack Router)
+  components/      # Reusable UI + shadcn primitives
+  hooks/           # Custom React hooks
+  lib/             # Utilities, job data, helpers
+  styles.css       # Tailwind v4 entry + theme tokens
+  router.tsx       # Router bootstrap
 ```
 
-File-based routing is provided by TanStack Router; `src/routeTree.gen.ts`
-is regenerated by the Vite plugin on every build.
-
-## 8. CI/CD
-
-Two GitHub Actions workflows live in `.github/workflows/`:
-
-- **`ci.yml`** — runs on every push and pull request to `main`:
-  1. Install dependencies with Bun (cached lockfile).
-  2. `bun run lint`.
-  3. `bun run build`.
-  4. Upload build artifact.
-- **`deploy.yml`** — runs on every push to `main`:
-  1. `vercel pull` to fetch the linked project's env.
-  2. `vercel build --prod`.
-  3. `vercel deploy --prebuilt --prod`.
-
-### Required GitHub secrets
-
-| Secret | How to get it |
-| --- | --- |
-| `VERCEL_TOKEN` | https://vercel.com/account/tokens |
-| `VERCEL_ORG_ID` | `cat .vercel/project.json` after `vercel link` |
-| `VERCEL_PROJECT_ID` | same file as above |
-
-## 9. Local development
+## Local Development
 
 ```bash
 bun install
-bun run dev      # http://localhost:8080
-bun run build    # production build
+bun run dev        # http://localhost:8080
+bun run build      # production build
+bun run preview    # preview built output
+bun run lint       # eslint
 ```
 
-## 10. Deployment
+Requires **Bun** (or Node 20+ with npm/pnpm as fallback).
 
-1. Push this repository to GitHub.
-2. In Vercel, **New Project → Import** the repo. Framework preset: *Other*.
-3. Run `vercel link` once locally to generate `.vercel/project.json`.
-4. Add the three secrets above to the GitHub repository settings.
-5. Push to `main` — the `deploy.yml` workflow ships the site to production.
+## Deployment
+
+Deployed to Vercel from the `main` branch of the connected GitHub repo:
+
+1. Push to `main` → GitHub Actions workflow (`.github/workflows/deploy.yml`) triggers.
+2. Workflow uses `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` secrets.
+3. Vercel builds with `bun install` and serves the TanStack Start output.
+
+**Production URL:** https://find-my-ai-role.vercel.app/
+
+## Adding a New Job (current build)
+
+Jobs are seeded in-code. To add a role, edit the jobs array in `src/lib/` (or wherever the seed lives) and push. A persistent backend (Lovable Cloud) can be enabled later to make `/post` write to a database.
+
+## Adding a New Route
+
+1. Create `src/routes/<name>.tsx` using `createFileRoute`.
+2. Add a `head()` with unique `title`, `description`, and `og:*` tags.
+3. Link to it with `<Link to="/<name>">` — the plugin regenerates `routeTree.gen.ts` automatically.
+
+## Design System
+
+All colors, gradients, and radii are semantic tokens defined in `src/styles.css` under `@theme`. Do not hardcode Tailwind color utilities (`bg-black`, `text-white`) in components — use the semantic tokens so theming stays consistent.
+
+## Roadmap Ideas
+
+- Enable Lovable Cloud for real job submissions + moderation
+- Auth for employers (post/manage their own listings)
+- Search + tag filters
+- Email alerts for new roles
+
+## License
+
+Private / unlicensed unless stated otherwise in the repo.
